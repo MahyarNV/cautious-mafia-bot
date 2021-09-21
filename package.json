@@ -1,0 +1,30 @@
+{
+  "name": "cautious-mafia-bot",
+  "version": "1.0.0",
+  "description": "A discord bot built with node js to control mafia game's channels.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MahyarNV/cautious-mafia-bot.git"
+  },
+  "keywords": [
+    "mafia",
+    "bot",
+    "discord",
+    "bot"
+  ],
+  "author": "MahyarNV",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MahyarNV/cautious-mafia-bot/issues"
+  },
+  "homepage": "https://github.com/MahyarNV/cautious-mafia-bot#readme",
+  "dependencies": {
+    "axios": "^0.21.4",
+    "discord.js": "^13.1.0",
+    "dotenv": "^10.0.0"
+  }
+}

@@ -26,10 +26,12 @@ client.on('messageCreate', async message => {
 
     let god_role = await message.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
     let players_role = await message.guild.roles.everyone;
-    
+
+    let day_channel = await message.guild.channels.cache.find(r => r.name === `day`);
+    let vote_channel = await message.guild.channels.cache.find(r => r.name === `vote`);
     
     if (command === 'help') {
-        const exampleEmbed = new MessageEmbed()
+        const helpEmbed = new MessageEmbed()
             .setColor('#0099ff')
             .setTitle('CautiousMafia Help')
             .setAuthor('CautiousMafia', 'https://i.imgur.com/lHz2gI7.png')
@@ -49,7 +51,7 @@ client.on('messageCreate', async message => {
             .setTimestamp()
             .setFooter('MahyarNV');
 
-        channel.send({ embeds: [exampleEmbed] });
+        channel.send({ embeds: [helpEmbed] });
     }
 
     
@@ -69,11 +71,23 @@ client.on('messageCreate', async message => {
     
     else if (command === 'close' || command === 'lock') {
         if (await message.member.roles.cache.some(r => r.id === god_role.id)) {
-            await message.channel.permissionOverwrites.edit(
-                players_role,
-                { SEND_MESSAGES: false }
-            );
-            await message.react('✅');
+            if (args[0] === 'both') {
+                await day_channel.permissionOverwrites.edit(
+                    players_role,
+                    { SEND_MESSAGES: false }
+                );
+                await vote_channel.permissionOverwrites.edit(
+                    players_role,
+                    { SEND_MESSAGES: false }
+                );
+                await message.react('✅');
+            } else {
+                await message.channel.permissionOverwrites.edit(
+                    players_role,
+                    { SEND_MESSAGES: false }
+                );
+                await message.react('✅');
+            }
         } else {
             await message.react('⛔');
             await setTimeout(await function(){ 
@@ -85,11 +99,23 @@ client.on('messageCreate', async message => {
     
     else if (command === 'open' || command === 'unlock') {
         if (await message.member.roles.cache.some(r => r.id === god_role.id)) {
-            await message.channel.permissionOverwrites.edit(
-                players_role,
-                { SEND_MESSAGES: true }
-            );
-            await message.react('✅');
+            if (args[0] === 'both') {
+                await day_channel.permissionOverwrites.edit(
+                    players_role,
+                    { SEND_MESSAGES: true }
+                );
+                await vote_channel.permissionOverwrites.edit(
+                    players_role,
+                    { SEND_MESSAGES: true }
+                );
+                await message.react('✅');
+            } else {
+                await message.channel.permissionOverwrites.edit(
+                    players_role,
+                    { SEND_MESSAGES: true }
+                );
+                await message.react('✅');
+            }
         } else {
             await message.react('⛔');
             await setTimeout(await function(){ 
@@ -106,9 +132,6 @@ client.on('messageCreate', async message => {
                 message.delete();
             }, 3000);
         } else {
-            let day_channel = await message.guild.channels.cache.find(r => r.name === `day`);
-            let vote_channel = await message.guild.channels.cache.find(r => r.name === `vote`);
-
             if (!day_channel && !vote_channel) {
                 await message.reply(`I couldn't find the "vote" or "day" channel, delete them manually.`);
             }

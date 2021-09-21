@@ -11,94 +11,101 @@ client.on('guildCreate', async guild => {
     await guild.systemChannel.send(`Hello, I'm CautiousMafia bot made by Mahyar! Thanks for inviting me.`)
 });
 
-client.on('messageCreate', async msg => {
-    if (await !msg.guild) return;
+client.on('messageCreate', async message => {
+    if (await !message.guild) return;
+    if (await message.author.bot) return;
+    if (await !message.content.startsWith(process.env.PREFIX)) return;
+
+    const commandBody = await message.content.slice(process.env.PREFIX.length);
+    const args = await commandBody.split(' ');
+    const command = await args.shift().toLowerCase();
+
+    let god_role = await message.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
+    let player_role = await message.guild.roles.cache.find(r => r.id === process.env.PLAYER_ROLE_ID);
     
-    switch (msg.content) {
-        case `${process.env.PREFIX}ping`:
-            await msg.react('🏓');
-            break;
 
-        case `${process.env.PREFIX}createRoles`:
-            let role1 = await msg.guild.roles.create({
-                name: 'GOD',
-                color: 'WHITE'
-            });
-            let role2 = await msg.guild.roles.create({
-                name: 'PLAYER',
-                color: 'BLACK'
-            });
-            await msg.react('✅');
-            break;
+    if (command === 'ping') {
+        await message.react('🏓');
+    }
+    else if (command === 'createroles') {
+        role1 = await message.guild.roles.create({
+            name: 'GOD',
+            color: 'WHITE'
+        });
+        role2 = await message.guild.roles.create({
+            name: 'PLAYER',
+            color: 'BLACK'
+        });
+        await message.react('✅');
+    }
 
-        case `${process.env.PREFIX}close`:
-            let god_role = await msg.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
-            let player_role = await msg.guild.roles.cache.find(r => r.id === process.env.PLAYER_ROLE_ID);
 
-            if (await msg.member.roles.cache.some(r => r.id === god_role.id)) {
-                await msg.channel.permissionOverwrites.edit(
-                    player_role,
-                    { SEND_MESSAGES: false }
-                );
-                await msg.react('✅');
-            } else {
-                await msg.react('⛔');
-                await setTimeout(await function(){ 
-                    msg.delete();
-                }, 3000);
+    else if (command === 'close') {
+        if (await message.member.roles.cache.some(r => r.id === god_role.id)) {
+            await message.channel.permissionOverwrites.edit(
+                player_role,
+                { SEND_MESSAGES: false }
+            );
+            await message.react('✅');
+        } else {
+            await message.react('⛔');
+            await setTimeout(await function(){ 
+                message.delete();
+            }, 3000);
+        }
+    }
+
+
+    else if (command === 'open') {
+        if (await message.member.roles.cache.some(r => r.id === god_role.id)) {
+            await message.channel.permissionOverwrites.edit(
+                player_role,
+                { SEND_MESSAGES: true }
+            );
+            await message.react('✅');
+        } else {
+            await message.react('⛔');
+            await setTimeout(await function(){ 
+                message.delete();
+            }, 3000);
+        }
+    }
+
+
+    else if (command === 'resetchannels') {
+        if (await !message.member.roles.cache.some(r => r.id === god_role.id)) {
+            await message.react('⛔');
+            await setTimeout(await function(){ 
+                message.delete();
+            }, 3000);
+        } else {
+            let day_channel = await message.guild.channels.cache.find(r => r.name === `day`);
+            let vote_channel = await message.guild.channels.cache.find(r => r.name === `vote`);
+
+            if (!day_channel && !vote_channel) {
+                await message.reply(`I couldn't find the "vote" or "day" channel, delete them manually.`);
             }
-            break;
-
-        case `${process.env.PREFIX}open`:
-            let god_role = await msg.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
-            let player_role = await msg.guild.roles.cache.find(r => r.id === process.env.PLAYER_ROLE_ID);
-            let roles = await msg.guild.roles;
-
-            if (await msg.member.roles.cache.some(r => r.id === god_role.id)) {
-                await msg.channel.permissionOverwrites.edit(
-                    player_role,
-                    { SEND_MESSAGES: true }
-                );
-                await msg.react('✅');
-            } else {
-                await msg.react('⛔');
-                await setTimeout(await function(){ 
-                    msg.delete();
-                }, 3000);
+            else {
+                await day_channel.delete()
+                    .catch(err => {
+                        console.error(err);
+                    });
+                await vote_channel.delete()
+                    .catch(err => {
+                        console.error(err);
+                    });
             }
 
-        case `${process.env.PREFIX}resetChannels`:
-            let god_role = await msg.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
+            mafia_category = await message.guild.channels.cache.find(c => c.id == process.env.MAFIA_CAT && c.type == "GUILD_CATEGORY");
 
-            if (await !msg.member.roles.cache.some(r => r.id === god_role.id)) {
-                await msg.react('⛔');
-                await setTimeout(await function(){ 
-                    msg.delete();
-                }, 3000);
-                break;
-            }
-
-            let day_channel = await msg.guild.channels.cache.find(r => r.name === `day`);
-            let vote_channel = await msg.guild.channels.cache.find(r => r.name === `vote`);
-            let mafia_category = await msg.guild.channels.cache.find(c => c.id == process.env.MAFIA_CAT && c.type == "GUILD_CATEGORY");
-
-            await day_channel.delete()
-                .catch(err => {
-                    console.error(err);
-                });
-            await vote_channel.delete()
-                .catch(err => {
-                    console.error(err);
-                });
-
-            day_channel = await msg.guild.channels.create(
+            day_channel = await message.guild.channels.create(
                 'day',  { type: "text" }
             );
-            vote_channel = await msg.guild.channels.create(
+            vote_channel = await message.guild.channels.create(
                 'vote',  { type: "text" }
             );
 
-            const embed_msg = new MessageEmbed()
+            const embed_message = new MessageEmbed()
                 .setColor('#0099ff')
                 .setTitle('یادآوری:')
                 .setDescription(
@@ -107,21 +114,19 @@ client.on('messageCreate', async msg => {
                 )
                 .setTimestamp()
 
-            vote_channel.send({ embeds: [embed_msg] });
+            day_channel.send({ embeds: [embed_message] });
 
             if (mafia_category && vote_channel && day_channel) {
                 await vote_channel.setParent(mafia_category.id);
                 await day_channel.setParent(mafia_category.id);
             }
+        }
+    }
 
-            await msg.react('✅');
 
-            break;
-
-        case `${process.env.PREFIX}`:
-            await msg.react('❓');
-            await msg.reply(`Hey <@${msg.author.id}>, This command is wrong! @_@`);
-            break;
+    else {
+        await message.react('❓');
+        await message.reply(`Hey <@${message.author.id}>, This command is wrong! @_@`);
     }
 });
 

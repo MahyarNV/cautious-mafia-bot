@@ -34,7 +34,6 @@ client.on('messageCreate', async msg => {
         case `${process.env.PREFIX}close`:
             god_role = await msg.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
             player_role = await msg.guild.roles.cache.find(r => r.id === process.env.PLAYER_ROLE_ID);
-            roles = await msg.guild.roles;
 
             if (await msg.member.roles.cache.some(r => r.id === god_role.id)) {
                 await msg.channel.permissionOverwrites.edit(
@@ -117,6 +116,11 @@ client.on('messageCreate', async msg => {
 
             await msg.react('✅');
 
+            break;
+
+        case `${process.env.PREFIX}`:
+            await msg.react('❓');
+            await msg.reply(`Hey <@${msg.author.id}>, This command is wrong! @_@`);
             break;
     }
 });

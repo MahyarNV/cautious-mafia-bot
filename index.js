@@ -3,6 +3,8 @@ require('dotenv').config();
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
+const prefix = process.env.PREFIX;
+
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -14,36 +16,61 @@ client.on('guildCreate', async guild => {
 client.on('messageCreate', async message => {
     if (await !message.guild) return;
     if (await message.author.bot) return;
-    if (await !message.content.startsWith(process.env.PREFIX)) return;
+    if (await !message.content.startsWith(prefix)) return;
 
-    const commandBody = await message.content.slice(process.env.PREFIX.length);
+    const commandBody = await message.content.slice(prefix.length);
     const args = await commandBody.split(' ');
     const command = await args.shift().toLowerCase();
 
-    let god_role = await message.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
-    let player_role = await message.guild.roles.cache.find(r => r.id === process.env.PLAYER_ROLE_ID);
-    
+    const channel = message.channel;
 
-    if (command === 'ping') {
+    let god_role = await message.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
+    let players_role = await message.guild.roles.everyone;
+    
+    
+    if (command === 'help') {
+        const exampleEmbed = new MessageEmbed()
+            .setColor('#0099ff')
+            .setTitle('CautiousMafia Help')
+            .setAuthor('CautiousMafia', 'https://i.imgur.com/lHz2gI7.png')
+            .setDescription('You can see a full list of commands here:')
+            .setThumbnail('https://i.imgur.com/lHz2gI7.png')
+            .addFields(
+                { name: '`createRoles`', value: 'Use it in the first time you want to create needed roles for bot.' },
+                { name: '`open`', value: 'Open channel for players.', inline: true },
+                { name: '`close`', value: 'Close channel for players.', inline: true },
+                { name: '`resetChannels`', value: 'Reset channels for next match.', inline: true },
+                { name: '`unlock`', value: 'Open channel for players.', inline: true },
+                { name: '`lock`', value: 'Close channel for players.', inline: true },
+                { name: '`reset`', value: 'Reset channels for next match.', inline: true },
+                { name: 'Prefix', value: 'Prefix: `?`' },
+                { name: 'Usage', value: 'command + prefix. ex: `?open`' },
+            )
+            .setTimestamp()
+            .setFooter('MahyarNV');
+
+        channel.send({ embeds: [exampleEmbed] });
+    }
+
+    
+    else if (command === 'ping') {
         await message.react('🏓');
     }
+
+    
     else if (command === 'createroles') {
-        role1 = await message.guild.roles.create({
+        role = await message.guild.roles.create({
             name: 'GOD',
             color: 'WHITE'
-        });
-        role2 = await message.guild.roles.create({
-            name: 'PLAYER',
-            color: 'BLACK'
         });
         await message.react('✅');
     }
 
-
-    else if (command === 'close') {
+    
+    else if (command === 'close' || command === 'lock') {
         if (await message.member.roles.cache.some(r => r.id === god_role.id)) {
             await message.channel.permissionOverwrites.edit(
-                player_role,
+                players_role,
                 { SEND_MESSAGES: false }
             );
             await message.react('✅');
@@ -55,11 +82,11 @@ client.on('messageCreate', async message => {
         }
     }
 
-
-    else if (command === 'open') {
+    
+    else if (command === 'open' || command === 'unlock') {
         if (await message.member.roles.cache.some(r => r.id === god_role.id)) {
             await message.channel.permissionOverwrites.edit(
-                player_role,
+                players_role,
                 { SEND_MESSAGES: true }
             );
             await message.react('✅');
@@ -71,8 +98,8 @@ client.on('messageCreate', async message => {
         }
     }
 
-
-    else if (command === 'resetchannels') {
+    
+    else if (command === 'resetchannels' || command === 'reset') {
         if (await !message.member.roles.cache.some(r => r.id === god_role.id)) {
             await message.react('⛔');
             await setTimeout(await function(){ 
@@ -105,7 +132,7 @@ client.on('messageCreate', async message => {
                 'vote',  { type: "text" }
             );
 
-            const embed_message = new MessageEmbed()
+            let embed_message = new MessageEmbed()
                 .setColor('#0099ff')
                 .setTitle('یادآوری:')
                 .setDescription(
@@ -115,6 +142,16 @@ client.on('messageCreate', async message => {
                 .setTimestamp()
 
             day_channel.send({ embeds: [embed_message] });
+
+            embed_message = new MessageEmbed()
+                .setColor('#0099ff')
+                .setTitle('یادآوری:')
+                .setDescription(
+                    `برای شرکت در رای گیری ها در این چنل پیام دهید.`
+                )
+                .setTimestamp()
+
+            vote_channel.send({ embeds: [embed_message] });
 
             if (mafia_category && vote_channel && day_channel) {
                 await vote_channel.setParent(mafia_category.id);

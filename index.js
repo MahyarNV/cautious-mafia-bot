@@ -25,13 +25,29 @@ client.on('messageCreate', async message => {
     const channel = message.channel;
 
     let god_role = await message.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
-    let players_role = await message.guild.roles.everyone;
+
+    if (!god_role) {
+        let god_names = ['god', 'Mafia God'];
+        god_names.every ((name, key) => {
+            god_role = message.guild.roles.cache.find(r => r.name.toLowerCase() === name.toLowerCase());
+
+            if (god_role) return false;
+
+            return true;
+        });
+        if (!god_role) {
+            await message.reply("God role isn't set yet, contact the developer.");
+            return;
+        }
+    }
+
+    let everyone_role = await message.guild.roles.everyone;
 
     let day_channel = await message.guild.channels.cache.find(r => r.name === `day`);
     let vote_channel = await message.guild.channels.cache.find(r => r.name === `vote`);
     
     if (command === 'help') {
-        const helpEmbed = new MessageEmbed()
+        let helpEmbed = new MessageEmbed()
             .setColor('#0099ff')
             .setTitle('CautiousMafia Help')
             .setAuthor('CautiousMafia', 'https://i.imgur.com/lHz2gI7.png')
@@ -73,17 +89,17 @@ client.on('messageCreate', async message => {
         if (await message.member.roles.cache.some(r => r.id === god_role.id)) {
             if (args[0] === 'both') {
                 await day_channel.permissionOverwrites.edit(
-                    players_role,
+                    everyone_role,
                     { SEND_MESSAGES: false }
                 );
                 await vote_channel.permissionOverwrites.edit(
-                    players_role,
+                    everyone_role,
                     { SEND_MESSAGES: false }
                 );
                 await message.react('✅');
             } else {
                 await message.channel.permissionOverwrites.edit(
-                    players_role,
+                    everyone_role,
                     { SEND_MESSAGES: false }
                 );
                 await message.react('✅');
@@ -101,17 +117,17 @@ client.on('messageCreate', async message => {
         if (await message.member.roles.cache.some(r => r.id === god_role.id)) {
             if (args[0] === 'both') {
                 await day_channel.permissionOverwrites.edit(
-                    players_role,
+                    everyone_role,
                     { SEND_MESSAGES: true }
                 );
                 await vote_channel.permissionOverwrites.edit(
-                    players_role,
+                    everyone_role,
                     { SEND_MESSAGES: true }
                 );
                 await message.react('✅');
             } else {
                 await message.channel.permissionOverwrites.edit(
-                    players_role,
+                    everyone_role,
                     { SEND_MESSAGES: true }
                 );
                 await message.react('✅');

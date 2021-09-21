@@ -20,11 +20,11 @@ client.on('messageCreate', async msg => {
             break;
 
         case `${process.env.PREFIX}createRoles`:
-            role1 = await msg.guild.roles.create({
+            let role1 = await msg.guild.roles.create({
                 name: 'GOD',
                 color: 'WHITE'
             });
-            role2 = await msg.guild.roles.create({
+            let role2 = await msg.guild.roles.create({
                 name: 'PLAYER',
                 color: 'BLACK'
             });
@@ -32,8 +32,8 @@ client.on('messageCreate', async msg => {
             break;
 
         case `${process.env.PREFIX}close`:
-            god_role = await msg.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
-            player_role = await msg.guild.roles.cache.find(r => r.id === process.env.PLAYER_ROLE_ID);
+            let god_role = await msg.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
+            let player_role = await msg.guild.roles.cache.find(r => r.id === process.env.PLAYER_ROLE_ID);
 
             if (await msg.member.roles.cache.some(r => r.id === god_role.id)) {
                 await msg.channel.permissionOverwrites.edit(
@@ -50,9 +50,9 @@ client.on('messageCreate', async msg => {
             break;
 
         case `${process.env.PREFIX}open`:
-            god_role = await msg.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
-            player_role = await msg.guild.roles.cache.find(r => r.id === process.env.PLAYER_ROLE_ID);
-            roles = await msg.guild.roles;
+            let god_role = await msg.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
+            let player_role = await msg.guild.roles.cache.find(r => r.id === process.env.PLAYER_ROLE_ID);
+            let roles = await msg.guild.roles;
 
             if (await msg.member.roles.cache.some(r => r.id === god_role.id)) {
                 await msg.channel.permissionOverwrites.edit(

@@ -27,7 +27,7 @@ client.on('messageCreate', async message => {
     let god_role = await message.guild.roles.cache.find(r => r.id === process.env.GOD_ROLE_ID);
 
     if (!god_role) {
-        let god_names = ['god', 'Mafia God'];
+        let god_names = ['god', 'Mafia God', 'god mafia'];
         god_names.every ((name, key) => {
             god_role = message.guild.roles.cache.find(r => r.name.toLowerCase() === name.toLowerCase());
 
